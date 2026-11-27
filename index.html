@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="一个可离线体验的安装引导原型。在虚构环境中选择检查结果，体验成功、缺少组件及复查流程。">
+  <title>安装助手 · 交互演示</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f8f8f3; color: #20382d; font: 16px/1.7 system-ui, "Microsoft YaHei", sans-serif; }
+    main { max-width: 850px; margin: 0 auto; padding: clamp(40px, 10vh, 100px) clamp(20px, 5vw, 50px); }
+    h1 { font-size: clamp(2.1rem, 5vw, 3.5rem); line-height: 1.2; margin: 0 0 16px; letter-spacing: -.035em; }
+    .intro { margin: 0 0 32px; color: #536156; font-size: 1.08rem; }
+    .sim { background: #eef2e9; border: 1px solid #ccd6c6; border-radius: 5px; padding: clamp(18px, 4vw, 38px); }
+    .simnav { display: flex; gap: 10px; margin-bottom: 28px; }
+    .simnav span { flex: 1; border-top: 3px solid #bbc7b7; padding-top: 8px; color: #526257; }
+    .simnav [aria-current="step"] { color: #213f2e; border-color: #2e6147; font-weight: 700; }
+    h2 { font-size: clamp(1.35rem, 3.3vw, 1.85rem); margin: 0; line-height: 1.4; }
+    #demo-body p { margin: 12px 0 24px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    button { font: inherit; font-weight: 600; border-radius: 5px; border: 1px solid #21463a; padding: 9px 18px; cursor: pointer; }
+    .primary { background: #21463a; color: white; }
+    .primary:hover { background: #315d4e; }
+    .secondary { background: white; color: #28493d; }
+    .secondary:hover { background: #f5f7f0; }
+    :focus-visible { outline: 3px solid #947014; outline-offset: 4px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>安装引导演示</h1>
+    <p class="intro">在虚构的 Windows 环境中，体验安装前的检查与重试。所有操作只模拟界面反馈。</p>
+    <section class="sim" aria-label="安装助手交互演示">
+      <div class="simnav" role="group" aria-label="演示步骤"><span>准备</span><span>检查</span><span>完成</span></div>
+      <div id="demo-body" aria-live="polite"></div>
+      <noscript>请启用 JavaScript 以体验流程演示。</noscript>
+    </section>
+  </main>
+  <script>
+const body = document.getElementById('demo-body');
+if (body) {
+  const states = {
+    start: [0, '准备演示环境', '本次使用一台虚构的 Windows 电脑。开始后，你可以选择检查结果，分别体验顺利完成或需要重试的路径。', [['进入环境检查', 'check']]],
+    check: [1, '选择一个示例情形', '引导现在来到环境检查。选择一种情形，看看用户接下来会收到什么反馈。', [['模拟检查通过', 'pass'], ['模拟缺少组件', 'missing']]],
+    missing: [1, '示例反馈：缺少组件', '检查发现示例组件尚未就绪。界面保留当前进度，你可以模拟补齐组件，再次检查。', [['模拟补齐并复查', 'pass'], ['重选情形', 'check']]],
+    pass: [1, '示例反馈：环境就绪', '检查已通过。继续查看完成提示，结束本次演示。', [['查看完成提示', 'done']]],
+    done: [2, '演示已完成', '你已体验安装引导的准备、检查与完成反馈。演示中的操作均未更改设备。', [['重新体验', 'start']]]
+  };
+  function render(id, focus = false) {
+    const [step, title, description, actions] = states[id];
+    const heading = document.createElement('h2');
+    heading.textContent = title;
+    heading.tabIndex = -1;
+    const paragraph = document.createElement('p');
+    paragraph.textContent = description;
+    const buttons = document.createElement('div');
+    buttons.className = 'actions';
+    actions.forEach(([label, next], i) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'button ' + (i ? 'secondary' : 'primary');
+      button.textContent = label;
+      button.addEventListener('click', () => render(next, true));
+      buttons.append(button);
+    });
+    document.querySelectorAll('.simnav span').forEach((node, i) => {
+      if (i === step) node.setAttribute('aria-current','step');
+      else node.removeAttribute('aria-current');
+    });
+    body.replaceChildren(heading, paragraph, buttons);
+    if (focus) heading.focus({preventScroll:true});
+  }
+  render('start');
+}
+  </script>
+</body>
+</html>
